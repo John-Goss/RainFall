@@ -1,0 +1,11 @@
+#include <stdlib.h>
+#include <unistd.h>
+
+int main (int ac, char **av) {
+	if (atoi(av[1]) != 423) {
+		write(1, "No !\n", 5);
+		return (0);
+	}
+	execv("/bin/sh", NULL);
+	return (0);
+}
