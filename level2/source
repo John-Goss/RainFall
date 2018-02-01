@@ -1,0 +1,13 @@
+int		p(void)
+{
+	char str[64];
+	gets(str);
+	puts(str);
+	strdup(str);
+}
+
+int		main(void)
+{
+	p();
+	return (0);
+}
