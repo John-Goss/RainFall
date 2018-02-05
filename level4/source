@@ -1,0 +1,26 @@
+
+int		p(char *s)
+{
+	printf("%s\n", s);
+	return (0);
+}
+
+int		n()
+{
+	int		res;
+	char	str[520];
+
+	res = 0;
+	fgets(str, 512, stdin);
+	res = p(str);
+
+	if (res == 16930116)
+		system("/bin/cat /home/user/level5/.pass");
+	return (0);
+}
+
+int		main()
+{
+	n();
+	return (0);
+}
