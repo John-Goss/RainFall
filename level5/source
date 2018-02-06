@@ -1,0 +1,21 @@
+int     o()
+{
+    system("/bin/sh");
+    return (0);
+}
+
+int     n()
+{
+	char	str[520];
+
+	fgets(str, 512, stdin);
+    printf(str);
+    exit(0);
+    return (0);
+}
+
+int     main()
+{
+    n();
+    return (0);
+}
