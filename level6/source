@@ -1,0 +1,21 @@
+void     n()
+{
+    system("/bin/cat /home/user/level5/.pass");
+}
+
+void     m()
+{
+    puts("Nope");
+}
+
+int     main(int ac, char **av)
+{
+    char *malloc1;
+    char *malloc2;
+
+    malloc1 = malloc(71);
+    malloc2 = malloc(1);
+
+    strcpy(malloc1, av[1]);
+    return (0);
+}
