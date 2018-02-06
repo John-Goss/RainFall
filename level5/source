@@ -1,17 +1,16 @@
-int     o()
+void     o()
 {
     system("/bin/sh");
-    return (0);
+    exit(1);
 }
 
-int     n()
+void     n()
 {
 	char	str[520];
 
 	fgets(str, 512, stdin);
     printf(str);
-    exit(0);
-    return (0);
+    exit(1);
 }
 
 int     main()
