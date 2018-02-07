@@ -1,0 +1,24 @@
+char *glob;
+
+int     m()
+{
+    int time_val = time(NULL);
+    printf("%s\n - %d\n", flag, time_val);
+	return (0);
+}
+
+int     main(int ac, char **av)
+{
+    char *s1 = malloc(8);
+    char *s2 = malloc(8);
+	char *s3 = malloc(8);
+    char *s4 = malloc(8);
+
+    strcpy(s1, av[1]);
+    strcpy(s2, av[2]);
+
+    FILE *file = fopen("/home/user/level8/.pass", "r");
+    fgets(glob, 68, file);
+    puts("~~");
+    return (0);
+}
