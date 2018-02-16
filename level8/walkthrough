@@ -19,8 +19,8 @@ printf("%p, %p \n", (nil), (nil)(nil), (nil)
 )                                = 14
 fgets([...]
 
-Il attends bien 2args car dans le printf o voit quil tente de printf les pointeurs de ces args mais il faut rentrer quoi ?
-Nous pouvons faire un cat de ce fichier pour voir qu'il y a 
+Il attends bien 2args car dans le ltrace on voit quil tente de printf les pointeurs de ces args mais il faut rentrer quoi ?
+Nous pouvons faire un cat de ce binaire pour voir ce qu'il y a :
 
 [...]
 auth resetservicelogin/bin/shPassword:

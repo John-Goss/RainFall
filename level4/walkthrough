@@ -50,7 +50,7 @@ On a 12 %x avant de voir ecrire nos 'AAAA', alors on peut aussi ecrire %12$n (ca
 Il y a un cmp dans la fonction n()
  8048492:	3d 44 55 02 01       	cmp    $0x1025544,%eax
 
-Si l'on regarde le contenu de ce cmp:
+Si l'on regarde combien vaut ce cmp en decimal:
 (gdb) p /s 0x1025544
 $1 = 16930116
 
