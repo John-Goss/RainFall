@@ -19,7 +19,7 @@ printf("%p, %p \n", (nil), (nil)(nil), (nil)
 )                                = 14
 fgets([...]
 
-Il attends bien 2args car dans le ltrace on voit quil tente de printf les pointeurs de ces args mais il faut rentrer quoi ?
+Il attends bien 2 args car dans le ltrace on voit qu'il tente de printf les pointeurs de ces args mais il faut rentrer quoi ?
 Nous pouvons faire un cat de ce binaire pour voir ce qu'il y a :
 
 [...]
@@ -61,7 +61,38 @@ printf("%p, %p \n", 0x804a008, 0x804a0180x804a008, 0x804a018
 
 On voit que service utilise le meme pointeur que auth et si on essaye de dabord mettre service cela ne fonctionne pas
 Donc c'est bien le auth qui demarre le malloc
-Il y a un strdup qui est fait quand on apelle service, que se passe t'il quand on essaye de faire une chaine un peu plus longue ?
+Il y a un strdup qui est fait quand on apelle service.
+Ok great, passons a login:
+
+[...]
+fgets(login
+"login\n", 128, 0xb7fd1ac0)                                                    = 0xbffff6b0
+fwrite("Password:\n", 1, 10, 0xb7fd1a20Password:
+)                                             = 10
+[...]
+
+On nous demande un password, l'ASM nous apprends que le contenue de eax doit etre different de nul pour rentrer dans l'appel de system
+Ici nous entrons dans l'autre cas donc un appel a fwrite:
+ 80486e7:	8b 40 20             	mov    0x20(%eax),%eax
+ 80486ea:	85 c0                	test   %eax,%eax
+ 80486ec:	74 11                	je     80486ff <main+0x19b>
+ 80486ee:	c7 04 24 33 88 04 08 	movl   $0x8048833,(%esp)
+ 80486f5:	e8 86 fd ff ff       	call   8048480 <system@plt>
+ 80486fa:	e9 75 fe ff ff       	jmp    8048574 <main+0x10>
+ 80486ff:	a1 a0 9a 04 08       	mov    0x8049aa0,%eax
+ 8048704:	89 c2                	mov    %eax,%edx
+ 8048706:	b8 3b 88 04 08       	mov    $0x804883b,%eax
+ 804870b:	89 54 24 0c          	mov    %edx,0xc(%esp)
+ 804870f:	c7 44 24 08 0a 00 00 	movl   $0xa,0x8(%esp)
+ 8048716:	00
+ 8048717:	c7 44 24 04 01 00 00 	movl   $0x1,0x4(%esp)
+ 804871e:	00
+ 804871f:	89 04 24             	mov    %eax,(%esp)
+ 8048722:	e8 29 fd ff ff       	call   8048450 <fwrite@plt>
+
+
+On remarque aussi sur la premiere ligne ci-dessus que on test 0x20 != null donc le 32eme char,
+alors que se passe t'il quand on essaye de faire une chaine un peu plus longue dans service ?
 
 $> ltrace ./level8
 [...]
