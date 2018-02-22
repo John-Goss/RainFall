@@ -1,0 +1,41 @@
+#include <stdlib.h>
+#include <string.h>
+
+int x = 0;
+
+int     greetuser(char *buff)
+{
+	char str[76];
+
+	if (x == 0)
+		str = strdup("Hello ");
+	if (x == 1)
+		str = strdup("Goedemiddag! ");
+	if (x == 2)
+		str = strdup("Hyvää päivää ");
+	strcat(str, buff);
+	puts(str);
+}
+
+int     main(int ac, char **av)
+{
+	char    buff[76];
+
+	if (ac == 3)
+	{
+		char str[40];
+		char *lang = getenv("LANG");
+
+		memset(buff, '\0', 76);
+		strncpy(buff, argv[1], 40);
+		strncpy(buff + 40, argv[2], 32);
+		if (lang != NULL)
+		{
+			if (memcmp(lang, "nl", 2) == 0)
+				x = 1;
+			if (memcmp(lang, "fi", 2) == 0)
+				x = 2;
+		}
+		greetuser(buff);
+	}
+}
