@@ -1,0 +1,24 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+int     main(int ac, char **av)
+{
+	char buff;
+	FILE *file = fopen("/home/user/end/.pass", "r");
+
+	memset(buff, 0, 33);
+	if (ac == 2 && file)
+	{
+		fread(buff, 1, 66, file);
+		buff[atoi(argv[1])] = 0;
+		fread(buff + 66, 1, 65, file);
+		fclose(file);
+		if (strcmp(buff, argv[1]) == 0)
+			execl("/bin/sh", "sh", NULL);
+		else
+			puts("\n");
+	}
+	return (0);
+}

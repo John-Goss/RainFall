@@ -1,0 +1,24 @@
+Le ltrace ne nous indique rien de concluant.
+
+$> ltrace ./bonus3
+__libc_start_main(0x80484f4, 1, 0xbffff7d4, 0x8048620, 0x8048690 <unfinished ...>
+fopen("/home/user/end/.pass", "r")                                                                               = 0
++++ exited (status 255) +++
+
+Disas main nous apprend qu'il faut un argument sinon le programme sort directement.
+On lui passe alors un a et le programme sort. Puis une grande chaine mais ca ne segfault pas non plus. ltrace toujours inefficace.
+
+$ ./bonus3 a
+
+
+Il y a un fopen qui est fait sur "/home/user/end/.pass" => file
+Puis un genre de memset qui va clear une variable (enfin avec des ! ...) => buff
+Avec le fread on recupere le contenue de file et on le met dans buff
+Ensuite on a notre va mettre un \0 dans buff[atoi(av[1])]
+Ensuite on va comparer si notre chaine buff est egal a av[1] et si oui on lance le shell
+
+Du coup on lui envoi une chaine vide, l'atoi retourne 0 et place un \0 des le debut de la chaine et compare buff == 0 av[1] == 0
+
+$> ./bonus3 ""
+$> cat /home/user/end/.pass
+3321b6f81659f9a71c76616f606e4b50189cecfea611393d5d649f75e157353c
