@@ -1,7 +1,7 @@
-On s'appercois qu'un binaire 'level0' est a la racine.
-En le desassemblant avec GDB, on se rend compte qu'il fait simplement un cmp du atoi(av[1]), premier argument recus en parametre, avec la valeur 423.
+On s'apperçois qu'un binaire 'level0' est à la racine.
+En le désassemblant avec GDB, on se rend compte qu'il fait simplement un cmp du atoi(av[1]), premier argument recu en parametre, avec la valeur 423.
 
-Donc on relance le binaire avec 423 en parametre et il nous execute gentiement un shell avec les droits du binaire, soit level1.
+Donc on relance le binaire avec 423 en parametre et il nous execute gentiment un shell avec les droits du binaire, soit level1.
 On peux facilement faire un:
 
 $> cat /home/user/level1/.pass
